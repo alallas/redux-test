@@ -14,6 +14,7 @@ function sagaMiddlewareFactory() {
       getState,
     });
     return (next) => (action) => {
+      // 【一句话】dispatch调用channel的put，使得take往后的put可以执行，这个put执行真正的dispatch
       // 下面是把taker函数从数组里面拿出来全部执行，也就是执行next函数
       // 然后迭代器继续往下执行，执行外部put函数拿到effect
       // 然后这个时候的done还是为false，就执行runEffect，然后开始内部的putEffect的函数（也就是dispatch函数），用的是真正的action的入参
@@ -21,6 +22,7 @@ function sagaMiddlewareFactory() {
       // 为什么继续来到这里？因为传给中间件的dispatch函数都是增强过的了已经（createStore返回的dispatch就是增强后的）
       channel.put(action);
       return next(action);
+      // 注意dispatch({type: 'wrap-add'})的最后会用这个wrap的action去执行原生的next，这个时候的匹配就肯定对不上了
     };
   }
   // 这里是runSaga的第二入参，是暴露给外面的，一般是rootSaga

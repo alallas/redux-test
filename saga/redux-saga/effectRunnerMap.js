@@ -1,5 +1,7 @@
 import * as effectTypes from "./effectTypes";
 import proc from "./proc";
+import is from "./is";
+import { createAllStyleChildCallbacks } from "./utils";
 
 function runTakeEffect(env, payload, next) {
   // matcher函数的参数是action
@@ -10,7 +12,6 @@ function runTakeEffect(env, payload, next) {
 }
 
 function runPutEffect(env, payload, next) {
-  // 这里的入参不应该是payload.pattern吗，因为当时在put那边吧action放到了pattern属性里面
   // 这里的dispatch就是（在src\redux-saga\middleware.js里面）
   // (action) => {
   //   channel.put(action);
@@ -28,8 +29,54 @@ function runForkEffect(env, payload, next) {
   // next是总控函数
   // 这里是开启一个新的子线程，不会阻塞当前的saga，如何体现的？？
   const iterator = payload.fn();
-  proc(env, iterator);
+  const task = proc(env, iterator);
   // 这个proc执行完之后，不会阻塞调用next，这里手动提前在外部调用next（put函数也一样）
+  // 把任务对象给到外面的yield()前面的变量
+  next(task);
+}
+
+// call会阻塞saga函数的执行
+function runCallEffect(env, payload, next) {
+  const { fn, args } = payload;
+  const result = fn(...args);
+  if (is.promise(result)) {
+    result.then(
+      (res) => next(res),
+      (err) => next(err, true)
+    );
+  } else {
+    next(result);
+  }
+}
+
+function runCpsEffect(env, payload, next) {
+  const { fn, args } = payload;
+  // 回调里面的逻辑是去执行next函数
+  fn(...args, (err, res) => {
+    if (err) {
+      next(err, true);
+    } else {
+      next(res);
+    }
+  });
+}
+
+function runAllEffect(env, effects, next, { runEffect }) {
+  // 这里的effects就是gen函数的数组
+  if (effects.length === 0) {
+    return next([]);
+  }
+  const keys = Object.keys(effects);
+  const childCallbacks = createAllStyleChildCallbacks(effects, next);
+  keys.forEach((key) => {
+    // 这里为什么是用runEffect而不是用proc，每个effect不是一个iterator吗
+    // 如果直接用proc的话，proc的env参数去哪里传递呢？
+    runEffect(effects[key], childCallbacks[key]);
+  });
+}
+
+function runCancelEffect(env, task, next) {
+  task.cancel();
   next();
 }
 
@@ -37,6 +84,10 @@ const effectRunnerMap = {
   [effectTypes.TAKE]: runTakeEffect,
   [effectTypes.PUT]: runPutEffect,
   [effectTypes.FORK]: runForkEffect,
+  [effectTypes.CALL]: runCallEffect,
+  [effectTypes.CPS]: runCpsEffect,
+  [effectTypes.ALL]: runAllEffect,
+  [effectTypes.CANCEL]: runCancelEffect,
 };
 
 export default effectRunnerMap;

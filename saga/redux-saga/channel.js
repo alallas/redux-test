@@ -12,8 +12,13 @@ function stdChannel() {
     };
   }
   function put(input) {
-    for (let i = 0; i < currentTakers.length; i++) {
-      let taker = currentTakers[i];
+    // 下面必须要先复制一个变量出来，把currentTakers复制出来一份，然后再执行剩下逻辑
+    // 为什么？
+    // 因为taker.cancel()的执行会导致currentTaker的变化
+    // 假设我currentTaker一开始有两个next，在cancel之后，它就变成一个了，而这个时候i会变化，就拿不到正确的位置的next函数
+    const takers = currentTakers;
+    for (let i = 0; i < takers.length; i++) {
+      let taker = takers[i];
       if (taker["MATCH"](input)) {
         taker.cancel();
         taker(input);

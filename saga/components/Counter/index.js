@@ -1,28 +1,27 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { addNumber } from "../../store/reducers/counter";
-import { getCounterData } from "../../store/reducers/counter";
+import { addNumberAsyncAction, stopAddNumberAction } from "../../store/action/counter";
 
 function Counter() {
   const state = useSelector((state) => state.counter);
   const dispatch = useDispatch();
 
   const handleNumberPlus = () => {
-    debugger
+    // debugger
     console.log("1 time", new Date().getSeconds());
-    dispatch(addNumber(5));
+    dispatch(addNumberAsyncAction());
   };
 
-  useEffect(() => {
-    debugger
-    dispatch(getCounterData());
-  }, []);
+  const stopNumberPlus = () => {
+    dispatch(stopAddNumberAction());
+  };
 
   return (
     <>
       <div>number: {state.number}</div>
-      <div>data: {state.data}</div>
       <button onClick={handleNumberPlus}>+1</button>
+      <br />
+      <button onClick={stopNumberPlus}>stop</button>
     </>
   );
 }

@@ -1,12 +1,37 @@
-const iniState = {
-  number: 0,
-};
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { fetchCounterData } from "../../api";
 
-export default function (state = iniState, action) {
-  switch (action.type) {
-    case "add":
-      return { ...state, number: state.number + 1 };
-    default:
-      return { ...state };
+debugger
+export const getCounterData = createAsyncThunk(
+  "getCounterData",
+  async (_, { rejectWithValue }) => {
+    debugger
+    try {
+      const response = await fetchCounterData();
+      return response;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
   }
-}
+);
+debugger
+const counterSlice = createSlice({
+  name: "counter",
+  initialState: {
+    number: 0,
+    data: '',
+  },
+  reducers: {
+    addNumber: (state, action) => {
+      state.number = state.number + action.payload;
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(getCounterData.fulfilled, (state, { payload }) => {
+      state.data = payload;
+    });
+  },
+});
+
+export const { addNumber } = counterSlice.actions;
+export default counterSlice.reducer;
