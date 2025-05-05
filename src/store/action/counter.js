@@ -6,3 +6,16 @@ export function addNumberAction(data) {
   };
 }
 
+export function addNumberAsyncAction(data) {
+  return {
+    type: actionTypes.WRAP_ADD,
+    data,
+  };
+}
+
+export function stopAddNumberAction(data) {
+  return {
+    type: actionTypes.STOP_ADD,
+    data,
+  };
+}

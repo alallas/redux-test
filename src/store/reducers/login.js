@@ -1,29 +1,15 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchLoginData } from "../../api";
+import * as actionsType from "../action-types";
 
-export const getLoginData = createAsyncThunk(
-  "getLoginData",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await fetchLoginData();
-      return response;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
+const iniState = {
+  userinfo: 1,
+}
+
+
+export default function (state = iniState, action) {
+  switch(action.type) {
+    case actionsType.LOGIN:
+      return {...state, userinfo: state.userinfo + 5};
+    default:
+      return {...state};
   }
-);
-
-const loginSlice = createSlice({
-  name: "login",
-  initialState: {
-    userInfo: 'default',
-  },
-  reducers: {},
-  extraReducers: (builder) => {
-    builder.addCase(getLoginData.fulfilled, (state, { payload }) => {
-      state.userInfo = payload;
-    });
-  },
-});
-
-export default loginSlice.reducer;
+}

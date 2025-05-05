@@ -5,7 +5,7 @@ module.exports = {
   devtool: "eval-source-map",
   entry: {
     main: "./src/index.js",
-    debug: "./src/debug-redux.js",
+    // debug: "./src/debug-redux.js",
   },
   output: {
     path: path.resolve(__dirname, "build"),
@@ -15,7 +15,6 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules\/(?!(@reduxjs\/toolkit)\/).*/,
         use: [
           {
             loader: "babel-loader",
@@ -27,7 +26,6 @@ module.exports = {
       },
       {
         test: /\.js$/,
-        include: /node_modules\/@reduxjs\/toolkit/,
         use: ["source-map-loader"],
         enforce: "pre",
       },
@@ -39,11 +37,11 @@ module.exports = {
       chunks: ["main"],
       filename: "index.html",
     }),
-    new htmlWebpackPlugin({
-      template: "./public/index.html",
-      chunks: ["debug"],
-      filename: "debug.html",
-    }),
+    // new htmlWebpackPlugin({
+    //   template: "./public/index.html",
+    //   chunks: ["debug"],
+    //   filename: "debug.html",
+    // }),
   ],
   devServer: {
     host: "127.0.0.1",
